@@ -9,11 +9,15 @@
 
 volatile uint8_t SetPoint	 = 0; 
 volatile uint8_t Temperature = 0;
+bool Protection = false;
 
 int main(void)
 {
 	if (eeprom_read_byte((uint8_t*)SetPointEEPROMaddr) != 0xFF){
 		SetPoint = eeprom_read_byte((uint8_t*)SetPointEEPROMaddr);
+	}
+	if (eeprom_read_byte((uint8_t*)ProtectionEEPROMaddr) != 0xFF){
+		Protection = (bool)eeprom_read_byte((uint8_t*)ProtectionEEPROMaddr);
 	}
 	DDRB = 0xFF;
 	DDRC = 0xFF;
@@ -30,9 +34,11 @@ int main(void)
 	sei();
 	while (1) 
     {
-		Temperature = (uint8_t)GetTemperature();
-		if (Temperature >= SetPoint){
+		Temperature = roundf(GetTemperature());
+		if ((Temperature >= SetPoint) || Protection == true){
 			PORTD &= ~(1 << PORTD3);
+			Protection = true;
+			eeprom_write_byte((uint8_t*)ProtectionEEPROMaddr, (uint8_t)Protection);
 		}
 	}
 }
@@ -62,6 +68,8 @@ ISR(TIMER0_OVF_vect){
 	if (ButtonRead() == OK)
 	{
 		PORTD |= (1 << PORTD3);
+		Protection = false;
+		eeprom_write_byte((uint8_t*)ProtectionEEPROMaddr, (uint8_t)Protection);
 		IndicatorOut(SetPoint);
 	}
 	if (ButtonRead() == ONES)
