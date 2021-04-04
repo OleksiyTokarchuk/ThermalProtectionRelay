@@ -9,9 +9,11 @@
 #ifndef MAIN_H_
 #define MAIN_H_
 
-#define SetPointEEPROMaddr	0x00
+#define SetPointEEPROMaddr		0x00
+#define ProtectionEEPROMaddr	0x01	
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <math.h>
 #define F_CPU	1000000UL
 #include <util/delay.h>
 #include "indicator.h"
